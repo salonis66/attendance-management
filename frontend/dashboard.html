@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HRMS — Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ─── GLOBAL UI ─── -->
+<div id="alertToast" class="alert-toast"></div>
+<div id="loadingOverlay" class="loading-overlay"><div class="spinner-ring"></div></div>
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="app-wrapper">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon"><i class="bi bi-people-fill"></i></div>
+      <div class="sidebar-brand">HR<span>MS</span></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item">
+        <a class="nav-link active" onclick="showSection('dashboard')">
+          <i class="nav-icon bi bi-grid-1x2-fill"></i> Dashboard
+        </a>
+      </div>
+
+      <div class="nav-section-label">People</div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('employees')">
+          <i class="nav-icon bi bi-people-fill"></i> Employees
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('departments')">
+          <i class="nav-icon bi bi-building"></i> Departments
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('designations')">
+          <i class="nav-icon bi bi-award"></i> Designations
+        </a>
+      </div>
+
+      <div class="nav-section-label">Operations</div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('shifts')">
+          <i class="nav-icon bi bi-clock-fill"></i> Shifts
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('empShifts')">
+          <i class="nav-icon bi bi-person-badge-fill"></i> Employee Shifts
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('holidays')">
+          <i class="nav-icon bi bi-calendar-heart-fill"></i> Holidays
+        </a>
+      </div>
+
+      <div class="nav-section-label">Leave</div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('leaveTypes')">
+          <i class="nav-icon bi bi-file-earmark-text-fill"></i> Leave Types
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('leaveBalance')">
+          <i class="nav-icon bi bi-bar-chart-fill"></i> Leave Balance
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('requests')">
+          <i class="nav-icon bi bi-inbox-fill"></i> Requests
+        </a>
+      </div>
+
+      <div class="nav-section-label">Settings</div>
+      <div class="nav-item">
+        <a class="nav-link" onclick="showSection('profile')">
+          <i class="nav-icon bi bi-building-gear"></i> Company Profile
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebarUserAvatar">A</div>
+        <div>
+          <div class="user-name" id="sidebarUserName">Admin</div>
+          <div class="user-role" id="sidebarUserRole">Company Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN CONTENT ══════════ -->
+  <div class="main-content">
+
+    <!-- TOP NAVBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-btn" title="Refresh" onclick="refreshCurrentSection()">
+          <i class="bi bi-arrow-clockwise"></i>
+        </div>
+        <a class="btn-logout" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div id="sec-dashboard" class="content-section active">
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-xl-3">
+            <div class="stat-card blue">
+              <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+              <div class="stat-label">Total Employees</div>
+              <div class="stat-value" id="statTotal">—</div>
+              <div class="stat-change">All active employees</div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-3">
+  <div class="stat-card green" onclick="showAttendanceEmployees('present')" style="cursor:pointer;">
+    <div class="stat-icon green"><i class="bi bi-person-check-fill"></i></div>
+    <div class="stat-label">Present Today</div>
+    <div class="stat-value" id="statPresent">—</div>
+    <div class="stat-change">Click to view</div>
+  </div>
+</div>
+
+<div class="col-6 col-xl-3">
+  <div class="stat-card orange" onclick="showAttendanceEmployees('absent')" style="cursor:pointer;">
+    <div class="stat-icon orange"><i class="bi bi-person-x-fill"></i></div>
+    <div class="stat-label">Absent Today</div>
+    <div class="stat-value" id="statAbsent">—</div>
+    <div class="stat-change">Click to view</div>
+  </div>
+</div>
+          <div class="col-6 col-xl-3">
+            <div class="stat-card cyan">
+              <div class="stat-icon cyan"><i class="bi bi-diagram-3-fill"></i></div>
+              <div class="stat-label">Departments</div>
+              <div class="stat-value" id="statDepts">—</div>
+              <div class="stat-change">Active departments</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-custom mb-3">
+            <span class="card-title-text">Recent Employees</span>
+            <button class="btn-primary-custom" onclick="showSection('employees')">
+              <i class="bi bi-people"></i> View All
+            </button>
+          </div>
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Code</th><th>Name</th><th>Department</th>
+                  <th>Designation</th><th>Joined</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentEmpTbody">
+                <tr><td colspan="6">
+                  <div class="empty-state"><i class="bi bi-hourglass-split"></i><p>Loading…</p></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    
+
+
+      <div class="modal fade" id="attendanceModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="attendanceModalTitle">Employees</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Department</th>
+                <th>Designation</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceEmployeeTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- ══ EMPLOYEES ══ -->
+      <div id="sec-employees" class="content-section">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <input type="text" class="form-control" placeholder="🔍 Search by name, email, code…"
+            style="width:260px;" oninput="searchEmployees(this.value)" />
+          <button class="btn-primary-custom" onclick="openAddEmployee()">
+            <i class="bi bi-plus-lg"></i> Add Employee
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Code</th><th>Name / Email</th><th>Phone</th>
+                  <th>Department</th><th>Designation</th>
+                  <th>Joined</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="employeeTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DEPARTMENTS ══ -->
+      <div id="sec-departments" class="content-section">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn-primary-custom" onclick="openAddDept()">
+            <i class="bi bi-plus-lg"></i> Add Department
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead><tr><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
+              <tbody id="deptTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DESIGNATIONS ══ -->
+      <div id="sec-designations" class="content-section">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn-primary-custom" onclick="openAddDesig()">
+            <i class="bi bi-plus-lg"></i> Add Designation
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead><tr><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
+              <tbody id="desigTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SHIFTS ══ -->
+      <div id="sec-shifts" class="content-section">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn-primary-custom" onclick="openAddShift()">
+            <i class="bi bi-plus-lg"></i> Add Shift
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr><th>Name</th><th>Start Time</th><th>End Time</th><th>Grace</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="shiftTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ EMPLOYEE SHIFTS ══ -->
+      <div id="sec-empShifts" class="content-section">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn-primary-custom" onclick="openAddEmpShift()">
+            <i class="bi bi-plus-lg"></i> Assign Shift
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr><th>Employee</th><th>Shift</th><th>Effective From</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="empShiftTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ HOLIDAYS ══ -->
+      <div id="sec-holidays" class="content-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <p style="font-size:13px;color:#6b7280;margin:0;">
+            <i class="bi bi-info-circle text-primary me-1"></i>
+            Click <strong>+</strong> to assign a holiday to your company calendar.
+          </p>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <h6>All Holidays</h6>
+<table class="custom-table">
+  <thead>
+    <tr><th>Name</th><th>Date</th><th>Action</th></tr>
+  </thead>
+  <tbody id="holidayTbody"></tbody>
+</table>
+
+<hr>
+
+<h6>Company Holidays</h6>
+<table class="custom-table">
+  <thead>
+    <tr><th>Name</th><th>Date</th><th>Action</th></tr>
+  </thead>
+  <tbody id="companyHolidayTbody"></tbody>
+</table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LEAVE TYPES ══ -->
+      <div id="sec-leaveTypes" class="content-section">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn-primary-custom" onclick="openAddLeaveType()">
+            <i class="bi bi-plus-lg"></i> Add Leave Type
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr><th>Name</th><th>Max Per Year</th><th>Carry Forward</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="leaveTypeTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LEAVE BALANCE ══ -->
+      <div id="sec-leaveBalance" class="content-section">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn-primary-custom" onclick="openAddLeaveBal()">
+            <i class="bi bi-plus-lg"></i> Add Balance
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Employee</th><th>Leave Type</th><th>Year</th>
+                  <th>Allocated</th><th>Used</th><th>Remaining</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leaveBalTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REQUESTS ══ -->
+      <div id="sec-requests" class="content-section">
+        <div class="custom-tabs mb-0">
+          <button class="custom-tab active" data-req-tab="leave"
+            onclick="loadRequests('leave')">
+            <i class="bi bi-calendar-check me-1"></i> Leave Requests
+          </button>
+          <button class="custom-tab" data-req-tab="wfh"
+            onclick="loadRequests('wfh')">
+            <i class="bi bi-house me-1"></i> WFH Requests
+          </button>
+          <button class="custom-tab" data-req-tab="overtime"
+            onclick="loadRequests('overtime')">
+            <i class="bi bi-clock-history me-1"></i> Overtime
+          </button>
+        </div>
+
+        <!-- Leave Requests Table -->
+        <div id="leaveReqTable" class="card mt-3">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Employee</th><th>Leave Type</th><th>From</th><th>To</th>
+                  <th>Days</th><th>Reason</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leaveReqTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- WFH Requests Table -->
+        <div id="wfhReqTable" class="card mt-3" style="display:none;">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr><th>Employee</th><th>Date</th><th>Reason</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="wfhReqTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Overtime Requests Table -->
+        <div id="overtimeReqTable" class="card mt-3" style="display:none;">
+          <div class="table-wrapper">
+            <table class="custom-table">
+              <thead>
+                <tr><th>Employee</th><th>Date</th><th>Hours</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="overtimeReqTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ COMPANY PROFILE ══ -->
+      <div id="sec-profile" class="content-section">
+        <div class="profile-header">
+          <div class="profile-avatar" id="profileAvatar">C</div>
+          <div>
+            <div class="profile-name" id="profileName">Loading…</div>
+            <div class="profile-email" id="profileEmail">—</div>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h6 style="font-weight:700;margin:0;">Company Information</h6>
+            <button class="btn-primary-custom" onclick="saveCompany()">
+              <i class="bi bi-floppy"></i> Save Changes
+            </button>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Company Name</label>
+              <input type="text" id="coName" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" id="coEmail" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone</label>
+              <input type="text" id="coPhone" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Max Employees</label>
+              <input type="number" id="coMaxEmp" class="form-control" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Address</label>
+              <textarea id="coAddress" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Plan ID</label>
+              <input type="text" id="coPlanId" class="form-control" readonly
+                style="background:#f9fafb;" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Tenant ID</label>
+              <input type="text" id="coTenantId" class="form-control" readonly
+                style="background:#f9fafb;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-wrapper -->
+
+
+<!-- ════════════════════════════════════
+     MODALS
+════════════════════════════════════ -->
+
+<!-- ── Employee Modal ── -->
+<div class="modal fade" id="employeeModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="employeeModalTitle">Add Employee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="employeeForm" onsubmit="return false;">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Employee Code</label>
+              <input type="text" id="empCode" class="form-control" placeholder="EMP001" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="empName" class="form-control" placeholder="Rahul Sharma" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email *</label>
+              <input type="email" id="empEmail" class="form-control" placeholder="rahul@gmail.com" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone</label>
+              <input type="text" id="empPhone" class="form-control" placeholder="9876543210" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Department</label>
+              <select id="empDepartment" class="form-select">
+                <option value="">Select Department</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Designation</label>
+              <select id="empDesignation" class="form-select">
+                <option value="">Select Designation</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+  <label class="form-label">Shift</label>
+  <select id="empShift" class="form-select">
+    <option value="">Select Shift</option>
+  </select>
+</div>
+            <div class="col-md-6">
+              <label class="form-label">Date of Joining</label>
+              <input type="date" id="empDOJ" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select id="empIsActive" class="form-select">
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveEmployee()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Department Modal ── -->
+<div class="modal fade" id="deptModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deptModalTitle">Add Department</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="deptForm" onsubmit="return false;">
+          <label class="form-label">Name *</label>
+          <input type="text" id="deptName" class="form-control" placeholder="e.g. Human Resources" />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveDept()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Designation Modal ── -->
+<div class="modal fade" id="desigModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="desigModalTitle">Add Designation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="desigForm" onsubmit="return false;">
+          <label class="form-label">Name *</label>
+          <input type="text" id="desigName" class="form-control" placeholder="e.g. Software Engineer" />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveDesig()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Shift Modal ── -->
+<div class="modal fade" id="shiftModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shiftModalTitle">Add Shift</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="shiftForm" onsubmit="return false;">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Shift Name *</label>
+              <input type="text" id="shiftName" class="form-control" placeholder="Morning Shift" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Start Time * <small class="text-muted">(HH:MM:SS)</small></label>
+              <input type="time" id="shiftStart" class="form-control" step="1" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">End Time * <small class="text-muted">(HH:MM:SS)</small></label>
+              <input type="time" id="shiftEnd" class="form-control" step="1" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Grace Minutes</label>
+              <input type="number" id="shiftGrace" class="form-control" value="0" min="0" max="60" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveShift()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Employee Shift Modal ── -->
+<div class="modal fade" id="empShiftModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="empShiftModalTitle">Assign Shift</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="empShiftForm" onsubmit="return false;">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Employee *</label>
+              <select id="esEmployee" class="form-select">
+                <option value="">Select Employee</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Shift *</label>
+              <select id="esShift" class="form-select">
+                <option value="">Select Shift</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Effective From *</label>
+              <input type="date" id="esEffectiveFrom" class="form-control" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveEmpShift()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Leave Type Modal ── -->
+<div class="modal fade" id="leaveTypeModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaveTypeModalTitle">Add Leave Type</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="leaveTypeForm" onsubmit="return false;">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Name *</label>
+              <input type="text" id="ltName" class="form-control" placeholder="Casual Leave" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Max Per Year</label>
+              <input type="number" id="ltMaxPerYear" class="form-control" placeholder="12" min="0" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Carry Forward?</label>
+              <select id="ltCarryForward" class="form-select">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveLeaveType()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Leave Balance Modal ── -->
+<div class="modal fade" id="leaveBalModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaveBalModalTitle">Add Leave Balance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="leaveBalForm" onsubmit="return false;">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Employee *</label>
+              <select id="lbEmployee" class="form-select">
+                <option value="">Select Employee</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Leave Type *</label>
+              <select id="lbLeaveType" class="form-select">
+                <option value="">Select Leave Type</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Year *</label>
+              <input type="number" id="lbYear" class="form-control" placeholder="2026" min="2020" max="2100" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Total Allocated *</label>
+              <input type="number" id="lbAllocated" class="form-control" placeholder="12" min="0" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-primary-custom" onclick="saveLeaveBal()">
+          <i class="bi bi-floppy"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/employee.js"></script>
+<script src="js/department.js"></script>
+<script src="js/holiday.js"></script>
+
+<script>
+/* ═══════════════════════════════════════
+   MAIN APP CONTROLLER
+═══════════════════════════════════════ */
+let dashboardEmployees = [];
+let dashboardAttendance = [];
+requireAuth();
+populateSidebarUser();
+
+let currentSection = 'dashboard';
+
+const sectionTitles = {
+  dashboard:    'Dashboard',
+  employees:    'Employees',
+  departments:  'Departments',
+  designations: 'Designations',
+  shifts:       'Shifts',
+  empShifts:    'Employee Shifts',
+  holidays:     'Company Holidays',
+  leaveTypes:   'Leave Types',
+  leaveBalance: 'Leave Balance',
+  requests:     'Request Management',
+  profile:      'Company Profile',
+};
+
+async function showSection(name) {
+  document.querySelectorAll('.content-section').forEach(el =>
+    el.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(el =>
+    el.classList.remove('active'));
+
+  const secEl = document.getElementById(`sec-${name}`);
+  if (secEl) secEl.classList.add('active');
+
+  // Highlight correct nav link
+  document.querySelectorAll('.nav-link').forEach(el => {
+    if (el.getAttribute('onclick')?.includes(`'${name}'`)) el.classList.add('active');
+  });
+
+  document.getElementById('pageTitle').textContent = sectionTitles[name] || name;
+  currentSection = name;
+  closeSidebar();
+
+  // Load data
+  switch (name) {
+    case 'dashboard':    await loadDashboard();       break;
+    case 'employees':    await loadEmployees();        break;
+    case 'departments':  await loadDepartments();      break;
+    case 'designations': await loadDesignations();     break;
+    case 'shifts':       await loadShifts();           break;
+    case 'empShifts':    await loadEmpShifts();        break;
+    case 'holidays':     await loadHolidays();         break;
+    case 'leaveTypes':   await loadLeaveTypes();       break;
+    case 'leaveBalance': await loadLeaveBalances();    break;
+    case 'requests':     await loadRequests('leave');  break;
+    case 'profile':      await loadCompanyProfile();   break;
+  }
+}
+
+function refreshCurrentSection() {
+  showSection(currentSection);
+}
+
+/* ── DASHBOARD ──
+   Uses:
+   GET /employee/getAll  → plain array [ { Id, Name, ... } ]
+   GET /attendance/getAll → plain array [ { Id, StatusCode, ... } ]
+   GET /department/getAll → plain array [ { Id, Name } ]
+*/
+async function loadDashboard() {
+
+  
+  const [empData, attData, deptData] = await Promise.all([
+    Employees.getAll(),
+    Attendance.getAll(),
+    Departments.getAll(),
+  ]);
+
+  // All three return plain arrays
+  const employees   = Array.isArray(empData)  ? empData  : [];
+  const attendance  = Array.isArray(attData)  ? attData  : [];
+  const departments = Array.isArray(deptData) ? deptData : [];
+
+  // StatusCode === "PRESENT"
+  dashboardEmployees = employees;
+dashboardAttendance = attendance;
+
+const presentEmployeeIds = new Set(
+  attendance
+    .filter(a => (a.StatusCode || '').toUpperCase() === 'PRESENT')
+    .map(a => a.EmployeeId)
+);
+const presentCount = presentEmployeeIds.size;
+const absentCount = employees.length - presentCount;
+
+  document.getElementById('statTotal').textContent   = employees.length;
+  document.getElementById('statPresent').textContent = presentCount;
+  document.getElementById('statAbsent').textContent  = absentCount;
+  document.getElementById('statDepts').textContent   = departments.length;
+
+  
+
+  // Recent employees — last 5
+  const recent = [...employees].reverse().slice(0, 5);
+  const tbody  = document.getElementById('recentEmpTbody');
+
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty-state"><i class="bi bi-people"></i><p>No employees yet</p></div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recent.map(emp => `
+    <tr>
+      <td>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;
+          background:#f3f4f6;padding:3px 8px;border-radius:6px;">
+          ${esc(emp.EmployeeCode)}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:30px;height:30px;border-radius:7px;
+            background:linear-gradient(135deg,#4f46e5,#06b6d4);
+            display:flex;align-items:center;justify-content:center;
+            color:white;font-weight:700;font-size:12px;flex-shrink:0;">
+            ${(emp.Name || '?')[0].toUpperCase()}
+          </div>
+          <span style="font-weight:600;">${esc(emp.Name)}</span>
+        </div>
+      </td>
+      <td>${esc(emp.DepartmentName)}</td>
+      <td>${esc(emp.DesignationName)}</td>
+      <td>${fmtDate(emp.DateOfJoining)}</td>
+      <td>${emp.IsActive
+        ? '<span class="badge-custom badge-success">Active</span>'
+        : '<span class="badge-custom badge-danger">Inactive</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function showAttendanceEmployees(type) {
+  const tbody = document.getElementById('attendanceEmployeeTbody');
+  const title = document.getElementById('attendanceModalTitle');
+
+  if (!tbody) return;
+
+  const presentIds = new Set(
+    dashboardAttendance
+      .filter(a => (a.StatusCode || '').toUpperCase() === 'PRESENT')
+      .map(a => String(a.EmployeeId))
+  );
+
+  let filteredEmployees = [];
+
+  if (type === 'present') {
+    title.textContent = 'Present Employees';
+    filteredEmployees = dashboardEmployees.filter(emp =>
+      presentIds.has(String(emp.Id || emp.id))
+    );
+  } else {
+    title.textContent = 'Absent Employees';
+    filteredEmployees = dashboardEmployees.filter(emp =>
+      !presentIds.has(String(emp.Id || emp.id))
+    );
+  }
+
+  if (!filteredEmployees.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center py-4">
+          No employees found
+        </td>
+      </tr>
+    `;
+  } else {
+    tbody.innerHTML = filteredEmployees.map(emp => `
+      <tr>
+        <td>${esc(emp.EmployeeCode)}</td>
+        <td>${esc(emp.Name)}</td>
+        <td>${esc(emp.Email)}</td>
+        <td>${esc(emp.Phone)}</td>
+        <td>${esc(emp.DepartmentName)}</td>
+        <td>${esc(emp.DesignationName)}</td>
+      </tr>
+    `).join('');
+  }
+
+  new bootstrap.Modal(document.getElementById('attendanceModal')).show();
+}
+
+/* ── COMPANY PROFILE ──
+   GET /company/getbyId/:tenantId
+   Response: { TenantId, Name, Email, Phone, Address, PlanId, MaxEmployees, ... }
+*/
+let companyTenantId = null;
+
+async function loadCompanyProfile() {
+  const user = getUser();
+  companyTenantId = user?.tenantId || user?.TenantId;
+
+  if (!companyTenantId) {
+    showToast('Cannot determine Tenant ID. Please login again.', 'error');
+    return;
+  }
+
+  const co = await Company.getById(companyTenantId);
+  if (!co) return;
+
+  // Populate header
+  document.getElementById('profileAvatar').textContent = (co.Name || 'C')[0].toUpperCase();
+  document.getElementById('profileName').textContent   = co.Name  || '—';
+  document.getElementById('profileEmail').textContent  = co.Email || '—';
+
+  // Populate form
+  document.getElementById('coName').value     = co.Name          || '';
+  document.getElementById('coEmail').value    = co.Email         || '';
+  document.getElementById('coPhone').value    = co.Phone         || '';
+  document.getElementById('coAddress').value  = co.Address       || '';
+  document.getElementById('coMaxEmp').value   = co.MaxEmployees  || '';
+  document.getElementById('coPlanId').value   = co.PlanId        || '';
+  document.getElementById('coTenantId').value = co.TenantId      || '';
+}
+
+async function saveCompany() {
+  if (!companyTenantId) { showToast('Tenant ID not found', 'error'); return; }
+  const body = {
+    Name:         document.getElementById('coName').value.trim(),
+    Email:        document.getElementById('coEmail').value.trim(),
+    Phone:        document.getElementById('coPhone').value.trim(),
+    Address:      document.getElementById('coAddress').value.trim(),
+    MaxEmployees: parseInt(document.getElementById('coMaxEmp').value) || undefined,
+  };
+  const r = await Company.update(companyTenantId, body);
+  if (r) { showToast('Company profile updated!'); await loadCompanyProfile(); }
+}
+
+/* ── SIDEBAR MOBILE ── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+/* ── INIT ── */
+loadDashboard();
+</script>
+</body>
+</html>
